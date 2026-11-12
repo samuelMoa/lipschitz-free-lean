@@ -1,13 +1,18 @@
 # Exposed points of Lipschitz-free spaces in Lean 4 (test)
 
-> **This repository is a test / experiment**, not a finished library and not a Mathlib
-> contribution. It explores how far an AI-assisted formalization of a short research paper
-> can go, and what it leaves to humans. Feedback is welcome.
+> **Important — please read first.**
 >
-> **Independent personal project.** This work was **not supervised, reviewed or endorsed**
-> by the authors of the paper (C. Petitjean, A. Procházka) or by anyone at my university.
-> I am an M2 student revisiting their paper on my own and experimenting with the AI
-> assistant Claude. Any error is mine, not theirs.
+> * This is a **personal test** by an M2 student, nothing more. Its only purpose is to check
+>   whether the proofs of a published paper can be written in Lean, and to put online an
+>   alternative proof of the finite case proposed by the AI assistant Claude.
+> * **The authors of the paper (C. Petitjean, A. Procházka) are not associated with this
+>   project in any way.** They did not request, supervise, review or endorse it, and they
+>   are not responsible for its content.
+> * **All mathematical credit belongs to the authors of the paper.** This repository claims
+>   no new mathematical result. The alternative proof of the finite case (an easy case, which
+>   the paper itself describes as immediate) was proposed by Claude and is not presented as a
+>   research contribution.
+> * This is not a Mathlib contribution. Any error in the Lean code is mine.
 
 A Lean 4 / Mathlib formalization around the paper
 
