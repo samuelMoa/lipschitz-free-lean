@@ -1,23 +1,24 @@
 import Mathlib
 
 /-!
-# C. Petitjean, A. Procházka, « On exposed points of Lipschitz free spaces »
+# C. Petitjean, A. Procházka, "On exposed points of Lipschitz free spaces"
 (arXiv:1810.12031, 2018)
 
-Formalisation des démonstrations contenues dans l'article.
+Personal formalization test of the proofs contained in the paper.
+The authors are not associated with this test.
 
-Les résultats que l'article emprunte à d'autres travaux sont ADMIS. Ils ne sont
-pas déclarés comme axiomes : ils apparaissent comme hypothèses explicites des
-énoncés. Lean vérifie donc l'implication « résultats cités ⇒ résultats de l'article ».
+The results that the paper borrows from other works are ASSUMED. They are not
+declared as axioms: they appear as explicit hypotheses of the statements.
+Lean therefore checks the implication "cited results ⇒ results of the paper".
 
-Résultats admis :
-* propriétés standard de F(M) (Godefroy–Kalton [7]) : structure 'FreeSpaceFacts' ;
-* Lemme 2.23 de [4] (Fabian et al.) : 'Lemma223' ;
-* Proposition 2 (Aliaga–Pernecká [2]) : 'Prop2' ;
-* Lemme 5 (propriétés de la fonction magique, démontrées dans [8]) : 'Lemma5'.
+Assumed results:
+* standard properties of F(M) (Godefroy–Kalton [7]): structure `FreeSpaceFacts`;
+* Lemma 2.23 of [4] (Fabian et al.): `Lemma223`;
+* Proposition 2 (Aliaga–Pernecká [2]): `Prop2`;
+* Lemma 5 (properties of the magic function, proved in [8]): `Lemma5`.
 
-Résultats démontrés : Lemme 3, Lemme 4, la remarque qui suit le Lemme 5,
-Lemme 6 et le Théorème 1 (lorsque le point base est q, comme dans la preuve de l'article).
+Proved results: Lemma 3, Lemma 4, the remark after Lemma 5,
+Lemma 6 and Theorem 1 (with base point q, as in the proof of the paper).
 -/
 
 open Set Metric Filter Topology Classical
@@ -29,33 +30,33 @@ namespace PetitjeanProchazka
 variable {M : Type*} [MetricSpace M]
 variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
 
-/-! ## Définitions de l'article -/
+/-! ## Definitions of the paper -/
 
-/-- La molécule 'm_xy = (δ(x) - δ(y)) / d(x,y)'. -/
+/-- The molecule `m_xy = (δ(x) - δ(y)) / d(x,y)`. -/
 def mol (δ : M → F) (x y : M) : F := (dist x y)⁻¹ • (δ x - δ y)
 
-/-- 'F(N)' : adhérence de l'espace engendré par les 'δ(x)', 'x ∈ N'. -/
+/-- `F(N)`: closure of the span of the `δ(x)`, `x ∈ N`. -/
 def FN (δ : M → F) (N : Set M) : Submodule ℝ F :=
   (Submodule.span ℝ (δ '' N)).topologicalClosure
 
-/-- 'M̃ = M × M privé de la diagonale'. -/
+/-- `M̃ = M × M` minus the diagonal. -/
 abbrev Mt (M : Type*) := {pr : M × M // pr.1 ≠ pr.2}
 
-/-- Le segment métrique '[p,q]'. -/
+/-- The metric segment `[p,q]`. -/
 def seg (p q : M) : Set M := {x | dist p x + dist x q = dist p q}
 
-/-- L'ensemble '[p,q]_ε'. -/
+/-- The set `[p,q]_ε`. -/
 def segEps (p q : M) (ε : ℝ) : Set M := {x | dist p x + dist x q ≤ (1 - ε)⁻¹ * dist p q}
 
-/-- La « fonction magique » 'f_pq' (point base 'o'). -/
+/-- The "magic function" `f_pq` (base point `o`). -/
 def magic (o p q : M) (t : M) : ℝ :=
   dist p q / 2 * ((dist t q - dist t p) / (dist t q + dist t p)
     - (dist o q - dist o p) / (dist o q + dist o p))
 
-/-! ## Résultats admis -/
+/-! ## Assumed results -/
 
-/-- Propriétés standard de 'F(M)' (Godefroy–Kalton [7]) : 'ev f' est la forme
-linéaire '⟨·, f⟩' associée à 'f ∈ Lip₀(M)'. -/
+/-- Standard properties of `F(M)` (Godefroy–Kalton [7]): `ev f` is the linear
+form `⟨·, f⟩` associated with `f ∈ Lip₀(M)`. -/
 structure FreeSpaceFacts (o : M) (δ : M → F) (ev : (M → ℝ) → F →L[ℝ] ℝ) : Prop where
   ev_delta : ∀ f : M → ℝ, LipschitzWith 1 f → f o = 0 → ∀ x, ev f (δ x) = f x
   ev_norm : ∀ f : M → ℝ, LipschitzWith 1 f → f o = 0 → ‖ev f‖ ≤ 1
@@ -63,20 +64,20 @@ structure FreeSpaceFacts (o : M) (δ : M → F) (ev : (M → ℝ) → F →L[ℝ
   norm_delta_sub : ∀ x y, ‖δ x - δ y‖ ≤ dist x y
   ball_subset : ball (0 : F) 1 ⊆ closure (convexHull ℝ (range fun i : Mt M => mol δ i.1.1 i.1.2))
 
-/-- Lemme 2.23 de [4] (Fabian et al.). -/
+/-- Lemma 2.23 of [4] (Fabian et al.). -/
 def Lemma223 (X Y : Type*) [NormedAddCommGroup X] [NormedSpace ℝ X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] : Prop :=
   ∀ T : X →L[ℝ] Y, ball (0 : Y) 1 ⊆ closure (T '' ball (0 : X) 1) →
     ball (0 : Y) 1 ⊆ T '' ball (0 : X) 1
 
-/-- Proposition 2 (Aliaga–Pernecká [2]), sous la forme utilisée dans la preuve
-du Théorème 1 (familles fermées contenant le point base, contenues dans une même boule). -/
+/-- Proposition 2 (Aliaga–Pernecká [2]), in the form used in the proof of
+Theorem 1 (closed families containing the base point, inside a common ball). -/
 def Prop2 (o : M) (δ : M → F) : Prop :=
   ∀ (S : Set ℝ) (N : ℝ → Set M), S.Nonempty → (∀ α ∈ S, IsClosed (N α)) →
     (∀ α ∈ S, o ∈ N α) → (∃ R, ∀ α ∈ S, N α ⊆ closedBall o R) →
     (⋂ α ∈ S, (FN δ (N α) : Set F)) = (FN δ (⋂ α ∈ S, N α) : Set F)
 
-/-- Lemme 5 de l'article (propriétés de 'f_pq', démontrées dans [8]). -/
+/-- Lemma 5 of the paper (properties of `f_pq`, proved in [8]). -/
 def Lemma5 (o : M) : Prop :=
   ∀ p q : M, p ≠ q →
     LipschitzWith 1 (magic o p q) ∧
@@ -86,7 +87,7 @@ def Lemma5 (o : M) : Prop :=
     (∀ u v : M, u ≠ v → (magic o p q u - magic o p q v) / dist u v = 1 →
       u ∈ seg p q ∧ v ∈ seg p q)
 
-/-! ## Lemmes élémentaires -/
+/-! ## Elementary lemmas -/
 
 section Basic
 
@@ -138,7 +139,7 @@ lemma magic_base (o p q : M) : magic o p q o = 0 := by simp [magic]
 
 end Basic
 
-/-! ## Espace ℓ₁ -/
+/-! ## The space ℓ₁ -/
 
 section L1
 
@@ -154,7 +155,7 @@ lemma norm_lp_one (a : lp (fun _ : ι => ℝ) 1) : ‖a‖ = ∑' i, |a i| := by
 
 end L1
 
-/-! ## Lemme 3 -/
+/-! ## Lemma 3 -/
 
 section Lemma3
 
@@ -174,7 +175,7 @@ lemma summable_norm_coef_mol (hF : FreeSpaceFacts o δ ev) {c : Mt M → ℝ}
     Summable fun i : Mt M => ‖c i • mol δ i.1.1 i.1.2‖ :=
   hc.of_nonneg_of_le (fun _ => norm_nonneg _) fun i => norm_coef_mol_le hF (c i) i
 
-/-- L'opérateur 'Q : ℓ₁(M̃) → F(M)', 'e_(x,y) ↦ m_xy'. -/
+/-- The operator `Q : ℓ₁(M̃) → F(M)`, `e_(x,y) ↦ m_xy`. -/
 def Qmap (hF : FreeSpaceFacts o δ ev) : lp (fun _ : Mt M => ℝ) 1 →L[ℝ] F :=
   LinearMap.mkContinuous
     { toFun := fun a => ∑' i : Mt M, a i • mol δ i.1.1 i.1.2
@@ -202,8 +203,8 @@ lemma Qmap_single (hF : FreeSpaceFacts o δ ev) (i : Mt M) :
   · intro j hj
     simp [lp.single_apply, Pi.single_apply, hj]
 
-/-- **Lemme 3.** 'Q' est de norme au plus 1 et l'image de la boule unité ouverte
-contient la boule unité ouverte de 'F(M)' (en particulier 'Q' est surjective). -/
+/-- **Lemma 3.** `Q` has norm at most 1 and the image of the open unit ball
+contains the open unit ball of `F(M)` (in particular `Q` is onto). -/
 theorem lemma3 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M => ℝ) 1) F) :
     ‖Qmap hF‖ ≤ 1 ∧ ball (0 : F) 1 ⊆ Qmap hF '' ball 0 1 := by
   refine ⟨LinearMap.mkContinuous_norm_le _ zero_le_one _, h223 _ ?_⟩
@@ -226,7 +227,7 @@ theorem lemma3 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M 
     _ ⊆ closure (closure (Q '' ball 0 1)) := closure_mono hcl
     _ = closure (Q '' ball 0 1) := closure_closure
 
-/-- Conséquence du Lemme 3 utilisée dans la preuve du Lemme 6. -/
+/-- Consequence of Lemma 3 used in the proof of Lemma 6. -/
 lemma exists_rep (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M => ℝ) 1) F)
     (μ : F) {η : ℝ} (hη : 0 < η) :
     ∃ a : lp (fun _ : Mt M => ℝ) 1, Qmap hF a = μ ∧ ‖a‖ < ‖μ‖ + η := by
@@ -244,9 +245,9 @@ lemma exists_rep (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt 
 
 end Lemma3
 
-/-! ## Lemme 4 -/
+/-! ## Lemma 4 -/
 
-/-- **Lemme 4.** (énoncé pour une famille indexée par un ensemble quelconque) -/
+/-- **Lemma 4.** (stated for a family indexed by an arbitrary set) -/
 theorem lemma4 {ι : Type*} (a b : ι → ℝ) (ha : Summable fun i => |a i|)
     (ha1 : ∑' i, |a i| = 1) (hb : ∀ i, |b i| ≤ 1) {α ε : ℝ} (hα : 0 < α) (hα1 : α < 1)
     (hε : 0 < ε) (hε1 : ε < 1) (h : 1 - α * ε ≤ ∑' i, a i * b i) :
@@ -278,13 +279,13 @@ theorem lemma4 {ι : Type*} (a b : ι → ℝ) (ha : Summable fun i => |a i|)
   have : α * ∑' i, B.indicator (fun i => |a i|) i ≤ α * ε := by linarith
   exact le_of_mul_le_mul_left this hα
 
-/-! ## Remarque suivant le Lemme 5 -/
+/-! ## Remark after Lemma 5 -/
 
 section Remark
 
 variable {o : M} {δ : M → F} {ev : (M → ℝ) → F →L[ℝ] ℝ}
 
-/-- Si '[p,q] = {p,q}', 'f_pq' expose 'm_pq' parmi les molécules. -/
+/-- If `[p,q] = {p,q}`, `f_pq` exposes `m_pq` among molecules. -/
 theorem remark_molecules (hF : FreeSpaceFacts o δ ev) (hL5 : Lemma5 o) {p q : M}
     (hpq : p ≠ q) (hseg : seg p q = {p, q}) {u v : M} (huv : u ≠ v)
     (h : ev (magic o p q) (mol δ u v) = 1) : u = p ∧ v = q := by
@@ -305,13 +306,13 @@ theorem remark_molecules (hF : FreeSpaceFacts o δ ev) (hL5 : Lemma5 o) {p q : M
 
 end Remark
 
-/-! ## Lemme 6 -/
+/-! ## Lemma 6 -/
 
 section Lemma6
 
 variable {o : M} {δ : M → F} {ev : (M → ℝ) → F →L[ℝ] ℝ} [CompleteSpace F]
 
-/-- **Lemme 6.** -/
+/-- **Lemma 6.** -/
 theorem lemma6 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M => ℝ) 1) F)
     (hL5 : Lemma5 o) {p q : M} (hpq : p ≠ q) (hbase : o = q) (hseg : seg p q = {p, q})
     {μ : F} (hμ : ‖μ‖ ≤ 1) (h1 : ev (magic o p q) μ = 1)
@@ -320,13 +321,13 @@ theorem lemma6 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M 
   obtain ⟨hlip, h52, -⟩ := hL5 p q hpq
   set f := magic o p q with hfdef
   have hf0 : f o = 0 := magic_base o p q
-  -- « by the hypothesis ‖μ‖ = 1 »
+  -- "by the hypothesis ‖μ‖ = 1" (quoted from the paper)
   have hμ1 : ‖μ‖ = 1 := by
     have h := (ev f).le_opNorm μ
     have hn := hF.ev_norm f hlip hf0
     rw [h1, norm_one] at h
     nlinarith [norm_nonneg μ, norm_nonneg (ev f)]
-  -- représentation donnée par le Lemme 3
+  -- representation given by Lemma 3
   have hea : 0 < ε * α := mul_pos hε hα
   have hea1 : ε * α < 1 / 4 := by nlinarith
   set η := ε * α / (1 - ε * α) with hηdef
@@ -342,7 +343,7 @@ theorem lemma6 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M 
       _ ≤ 1 * ‖a‖ := mul_le_mul_of_nonneg_right (lemma3 hF h223).1 (norm_nonneg _)
       _ = ‖a‖ := one_mul _
   have hapos : 0 < ‖a‖ := by linarith
-  -- les coefficients b_i = ⟨m_{p_i q_i}, f_pq⟩
+  -- the coefficients b_i = ⟨m_{p_i q_i}, f_pq⟩
   set b : Mt M → ℝ := fun i => ev f (mol δ i.1.1 i.1.2) with hbdef
   have hb : ∀ i, |b i| ≤ 1 := fun i => abs_ev_mol_le hF hlip hf0 i.2
   have hsa := summable_abs_lp a
@@ -380,7 +381,7 @@ theorem lemma6 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M 
     calc ‖a‖ * ∑' i, B.indicator (fun i => |a' i|) i ≤ ‖a‖ * ε :=
           mul_le_mul_of_nonneg_left hL4 hapos.le
       _ ≤ 2 * ε := by nlinarith
-  -- pour i ∉ B, p_i et q_i sont dans [p,q]_α (Lemme 5 (2))
+  -- for i ∉ B, p_i and q_i lie in [p,q]_α (Lemma 5 (2))
   have hgood : ∀ i, i ∉ B → i.1.1 ∈ segEps p q α ∧ i.1.2 ∈ segEps p q α := by
     intro i hi
     simp only [hBdef, mem_setOf_eq, not_le] at hi
@@ -391,7 +392,7 @@ theorem lemma6 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M 
         rw [dist_comm, show f i.1.2 - f i.1.1 = -(f i.1.1 - f i.1.2) by ring, neg_div, ← hbi]
         linarith)
       exact ⟨h'.2, h'.1⟩
-  -- découpage μ = ν + (μ - ν)
+  -- splitting μ = ν + (μ - ν)
   have hsG : Summable fun i => |Bᶜ.indicator (fun i => a i) i| :=
     hsa.of_nonneg_of_le (fun _ => abs_nonneg _) fun i => by
       by_cases hi : i ∈ Bᶜ <;> simp [Set.indicator_apply, hi]
@@ -426,7 +427,7 @@ theorem lemma6 (hF : FreeSpaceFacts o δ ev) (h223 : Lemma223 (lp (fun _ : Mt M 
 
 end Lemma6
 
-/-! ## Théorème 1 -/
+/-! ## Theorem 1 -/
 
 section Theorem1
 
@@ -463,9 +464,9 @@ lemma iInter_segEps (p q : M) : ⋂ α ∈ Ioo (0 : ℝ) (1 / 2), segEps p q α 
 
 variable {o : M} {δ : M → F} {ev : (M → ℝ) → F →L[ℝ] ℝ} [CompleteSpace F]
 
-/-- **Théorème 1** (preuve de l'article, point base 'q') : si '[p,q] = {p,q}',
-la molécule 'm_pq' est un point exposé de la boule unité de 'F(M)',
-exposé par la fonction magique 'f_pq'. -/
+/-- **Theorem 1** (proof of the paper, base point `q`): if `[p,q] = {p,q}`,
+the molecule `m_pq` is an exposed point of the unit ball of `F(M)`,
+exposed by the magic function `f_pq`. -/
 theorem theorem1 [CompleteSpace M] (hF : FreeSpaceFacts o δ ev)
     (h223 : Lemma223 (lp (fun _ : Mt M => ℝ) 1) F) (hP2 : Prop2 o δ) (hL5 : Lemma5 o)
     {p q : M} (hpq : p ≠ q) (hseg : seg p q = {p, q}) (hbase : o = q) :
@@ -486,7 +487,7 @@ theorem theorem1 [CompleteSpace M] (hF : FreeSpaceFacts o δ ev)
   refine ⟨hmem, ev f, fun μ hμ => ⟨by rw [hlm]; exact hle μ hμ, fun hge => ?_⟩⟩
   rw [hlm] at hge
   have h1 : ev f μ = 1 := le_antisymm (hle μ hμ) hge
-  -- Lemme 6 : μ ∈ ⋂_{α} F([p,q]_α)
+  -- Lemma 6: μ ∈ ⋂_{α} F([p,q]_α)
   set S : Set ℝ := Ioo 0 (1 / 2) with hSdef
   have hin : ∀ α ∈ S, μ ∈ FN δ (segEps p q α) := by
     rintro α ⟨hα, hα2⟩
@@ -523,7 +524,7 @@ theorem theorem1 [CompleteSpace M] (hF : FreeSpaceFacts o δ ev)
     rw [hP] at this
     exact this
   rw [hSdef, iInter_segEps, hseg] at hμ2
-  -- F({p,q}) = vect{δ(p)} car δ(q) = δ(0) = 0
+  -- F({p,q}) = span{δ(p)} since δ(q) = δ(0) = 0
   have hq0 : δ q = 0 := by rw [← hbase]; exact hF.delta_base
   have hspan : FN δ ({p, q} : Set M) = Submodule.span ℝ {δ p} := by
     unfold FN
@@ -544,8 +545,8 @@ end Theorem1
 
 end PetitjeanProchazka
 
--- Vérifié le 11/11/2026 sur live.lean-lang.org (Lean v4.36.0-rc2, Mathlib) : aucune erreur ;
--- les cinq résultats ne dépendent que de propext, choice, Quot.sound (aucun sorry).
+-- Checked on 12 Nov 2026 on live.lean-lang.org (Lean v4.36.0-rc2, Mathlib): no errors;
+-- the five results depend only on propext, choice, Quot.sound (no sorry).
 #print axioms PetitjeanProchazka.lemma3
 #print axioms PetitjeanProchazka.lemma4
 #print axioms PetitjeanProchazka.remark_molecules

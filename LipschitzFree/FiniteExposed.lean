@@ -1,19 +1,20 @@
 import Mathlib
 
 /-!
-# Points exposés de la boule unité d'un espace Lipschitz-libre fini
+# Exposed points of the unit ball of a finite Lipschitz-free space
 
-Test de formalisation pour le mémoire de M2 (S. Moatty), autour de
-A. Procházka, C. Petitjean, « On exposed points of Lipschitz free spaces » (2018).
+Personal formalization test around
+C. Petitjean, A. Procházka, "On exposed points of Lipschitz free spaces" (2018).
+The authors are not associated with this test.
 
-Modèle (M fini) : un élément de F(M) est représenté par 'μ : M → ℝ' ;
-la boule unité est l'ensemble des 'μ' tels que '∑ μ(z) f(z) ≤ 1' pour toute
-fonction 'f' 1-lipschitzienne. (En prenant 'f' constante, on voit que ces 'μ'
-sont de masse totale nulle, comme les éléments de F(M).)
+Model (M finite): an element of F(M) is represented by `μ : M → ℝ`;
+the unit ball is the set of `μ` such that `∑ μ(z) f(z) ≤ 1` for every
+1-Lipschitz function `f`. (Taking `f` constant shows that these `μ`
+have total mass zero, like the elements of F(M).)
 
-Résultat principal : pour 'x ≠ y', la molécule 'm_xy = (δ_x - δ_y)/d(x,y)' est un
-point exposé de la boule unité si et seulement si aucun point 'z ∉ {x,y}' ne
-vérifie 'd(x,z) + d(z,y) = d(x,y)'.
+Main result: for `x ≠ y`, the molecule `m_xy = (δ_x - δ_y)/d(x,y)` is an
+exposed point of the unit ball if and only if no point `z ∉ {x,y}`
+satisfies `d(x,z) + d(z,y) = d(x,y)`.
 -/
 
 open Classical
@@ -26,28 +27,28 @@ set_option linter.unusedSectionVars false
 
 variable {M : Type*} [MetricSpace M] [Fintype M]
 
-/-! ## Définitions -/
+/-! ## Definitions -/
 
-/-- Fonctions 1-lipschitziennes. -/
+/-- 1-Lipschitz functions. -/
 def Lip1 : Set (M → ℝ) := {f | LipschitzWith 1 f}
 
-/-- Dualité entre 'μ' (élément de F(M)) et 'f' (fonction lipschitzienne). -/
+/-- Duality between `μ` (element of F(M)) and `f` (Lipschitz function). -/
 def pair (μ f : M → ℝ) : ℝ := ∑ z, μ z * f z
 
-/-- Norme de F(M) (norme de Kantorovich–Rubinstein). -/
+/-- Norm of F(M) (Kantorovich–Rubinstein norm). -/
 def fnorm (μ : M → ℝ) : ℝ := sSup ((fun f => pair μ f) '' Lip1)
 
-/-- Boule unité fermée de F(M). -/
+/-- Closed unit ball of F(M). -/
 def ball1 : Set (M → ℝ) := {μ | ∀ f : M → ℝ, LipschitzWith 1 f → pair μ f ≤ 1}
 
 lemma mem_ball1 {μ : M → ℝ} : μ ∈ (ball1 : Set (M → ℝ)) ↔
     ∀ f : M → ℝ, LipschitzWith 1 f → pair μ f ≤ 1 := Iff.rfl
 
-/-- La molécule 'm_xy = (δ_x - δ_y) / d(x,y)'. -/
+/-- The molecule `m_xy = (δ_x - δ_y) / d(x,y)`. -/
 def mol (x y : M) : M → ℝ :=
   fun z => ((if z = x then 1 else 0) - (if z = y then 1 else 0)) / dist x y
 
-/-! ## Lemmes de base -/
+/-! ## Basic lemmas -/
 
 lemma pair_mol (x y : M) (f : M → ℝ) : pair (mol x y) f = (f x - f y) / dist x y := by
   have h : ∀ z, mol x y z * f z
@@ -78,7 +79,7 @@ lemma mol_mem {x y : M} (hxy : x ≠ y) : mol x y ∈ (ball1 : Set (M → ℝ)) 
     rw [pair_mol, div_le_one (dist_pos.2 hxy)]
     exact sub_le_dist_of_lip hf x y
 
-/-- **Toute molécule est de norme 1.** -/
+/-- **Every molecule has norm 1.** -/
 theorem fnorm_mol {x y : M} (hxy : x ≠ y) : fnorm (mol x y) = 1 := by
   have hd : 0 < dist x y := dist_pos.2 hxy
   have hub : ∀ v ∈ (fun f => pair (mol x y) f) '' (Lip1 : Set (M → ℝ)), v ≤ 1 := by
@@ -91,7 +92,7 @@ theorem fnorm_mol {x y : M} (hxy : x ≠ y) : fnorm (mol x y) = 1 := by
     simp only [pair_mol, dist_self, sub_zero]
     exact div_self hd.ne'
 
-/-! ## Sens facile : un point entre 'x' et 'y' empêche 'm_xy' d'être extrémal -/
+/-! ## Easy direction: a point between `x` and `y` prevents `m_xy` from being extreme -/
 
 lemma mol_eq_comb {x y z : M} (hxz : x ≠ z) (hzy : z ≠ y)
     (hz : dist x z + dist z y = dist x y) :
@@ -126,10 +127,9 @@ theorem mol_not_extreme {x y z : M} (hxz : x ≠ z) (hzy : z ≠ y)
   norm_num at this
   exact hxy this
 
-/-! ## Sens difficile : construction d'une fonction qui expose 'm_xy' -/
+/-! ## Hard direction: construction of a function exposing `m_xy` -/
 
-/-- Sur un ensemble fini, des quantités strictement positives sont minorées
-par un même réel strictement positif. -/
+/-- On a finite set, positive quantities have a common positive lower bound. -/
 lemma exists_pos_le {ι : Type*} [Fintype ι] (g : ι → ℝ) (P : ι → Prop)
     (hg : ∀ i, P i → 0 < g i) : ∃ ε > 0, ∀ i, P i → ε ≤ g i := by
   by_cases hS : (Finset.univ.filter P).Nonempty
@@ -142,8 +142,8 @@ lemma dist_sub_bound (x y z : M) : |dist z y - dist z x| ≤ dist x y := by
   have := abs_dist_sub_le y x z
   rwa [dist_comm y z, dist_comm x z, dist_comm y x] at this
 
-/-- La fonction candidate : 'd/2' en 'x', '-d/2' en 'y', et ailleurs
-'(1 - η) (d(z,y) - d(z,x)) / 2'. -/
+/-- The candidate function: `d/2` at `x`, `-d/2` at `y`, and elsewhere
+`(1 - η) (d(z,y) - d(z,x)) / 2`. -/
 def expo (η : ℝ) (x y : M) : M → ℝ := fun z =>
   if z = x then dist x y / 2 else if z = y then -(dist x y / 2)
   else (1 - η) * ((dist z y - dist z x) / 2)
@@ -204,7 +204,7 @@ lemma case_out {a b : M} (hab : a ≠ b) :
   calc _ ≤ (1 - η) * dist a b := mul_le_mul_of_nonneg_left hq (by linarith)
     _ < dist a b := by nlinarith
 
-/-- La fonction 'expo' est strictement contractante sur toute paire autre que '{x,y}'. -/
+/-- The function `expo` is strictly contracting on every pair other than `{x,y}`. -/
 lemma expo_strict (hxy : x ≠ y) {a b : M} (hab : a ≠ b)
     (hp : ¬(a = x ∧ b = y)) (hp' : ¬(a = y ∧ b = x)) :
     |expo η x y a - expo η x y b| < dist a b := by
@@ -254,7 +254,7 @@ lemma expo_lip (hxy : x ≠ y) : LipschitzWith 1 (expo η x y) := by
 
 end Expo
 
-/-- Choix du paramètre 'η' quand aucun point n'est entre 'x' et 'y'. -/
+/-- Choice of the parameter `η` when no point lies between `x` and `y`. -/
 lemma exists_eta {x y : M} (hxy : x ≠ y)
     (hnb : ∀ z, z ≠ x → z ≠ y → dist x z + dist z y ≠ dist x y) :
     ∃ η : ℝ, 0 < η ∧ η ≤ 1 ∧
@@ -271,8 +271,8 @@ lemma exists_eta {x y : M} (hxy : x ≠ y)
     _ < ε := by linarith
     _ ≤ dist x z + dist z y - dist x y := hle z ⟨hzx, hzy⟩
 
-/-- Si 'f' est 1-lipschitzienne, strictement contractante hors de '{x,y}', et si
-'⟨μ, f⟩ ≥ 1' pour un 'μ' de la boule, alors 'μ' annule toute 'h' telle que 'h x = h y'. -/
+/-- If `f` is 1-Lipschitz, strictly contracting outside `{x,y}`, and
+`⟨μ, f⟩ ≥ 1` for some `μ` in the ball, then `μ` kills every `h` with `h x = h y`. -/
 lemma pair_eq_zero_of_perturb {x y : M} {μ f : M → ℝ} (hμ : μ ∈ (ball1 : Set (M → ℝ)))
     (hf : LipschitzWith 1 f)
     (hstrict : ∀ a b : M, a ≠ b → ¬(a = x ∧ b = y) → ¬(a = y ∧ b = x) →
@@ -316,8 +316,8 @@ lemma pair_eq_zero_of_perturb {x y : M} {μ f : M → ℝ} (hμ : μ ∈ (ball1 
   · linarith
   · exact h0
 
-/-- Un 'μ' qui annule toutes les 'h' avec 'h x = h y' et réalise '⟨μ, f⟩ = 1'
-est la molécule 'm_xy'. -/
+/-- A `μ` that kills every `h` with `h x = h y` and satisfies `⟨μ, f⟩ = 1`
+is the molecule `m_xy`. -/
 lemma eq_mol_of {x y : M} (hxy : x ≠ y) {μ f : M → ℝ} (hμ : μ ∈ (ball1 : Set (M → ℝ)))
     (hf : LipschitzWith 1 f) (hfxy : f x - f y = dist x y) (h1 : 1 ≤ pair μ f)
     (h0 : ∀ h : M → ℝ, h x = h y → pair μ h = 0) : μ = mol x y := by
@@ -346,8 +346,8 @@ lemma eq_mol_of {x y : M} (hxy : x ≠ y) {μ f : M → ℝ} (hμ : μ ∈ (ball
   · rw [hwy, hmy, hmx]; simp [mol, Ne.symm hxy]; ring
   · rw [hz w hwx hwy]; simp [mol, hwx, hwy]
 
-/-- **Sens difficile** : si aucun point n'est entre 'x' et 'y', la molécule
-'m_xy' est un point exposé de la boule unité. -/
+/-- **Hard direction**: if no point lies between `x` and `y`, the molecule
+`m_xy` is an exposed point of the unit ball. -/
 theorem mol_exposed {x y : M} (hxy : x ≠ y)
     (hnb : ∀ z, z ≠ x → z ≠ y → dist x z + dist z y ≠ dist x y) :
     mol x y ∈ (ball1 : Set (M → ℝ)).exposedPoints ℝ := by
@@ -374,9 +374,9 @@ theorem mol_exposed {x y : M} (hxy : x ≠ y)
     exact eq_mol_of hxy hν hf hfxy hle
       (pair_eq_zero_of_perturb hν hf hstrict hle)
 
-/-- **Théorème (cas fini de Procházka–Petitjean 2018).** Pour 'x ≠ y', la molécule
-'m_xy' est un point exposé de la boule unité de F(M) si et seulement si
-aucun point 'z ≠ x, y' n'est sur un segment métrique entre 'x' et 'y'. -/
+/-- **Theorem (finite case of Petitjean–Procházka 2018).** For `x ≠ y`, the molecule
+`m_xy` is an exposed point of the unit ball of F(M) if and only if
+no point `z ≠ x, y` lies on a metric segment between `x` and `y`. -/
 theorem mol_exposed_iff {x y : M} (hxy : x ≠ y) :
     mol x y ∈ (ball1 : Set (M → ℝ)).exposedPoints ℝ ↔
       ∀ z, z ≠ x → z ≠ y → dist x z + dist z y ≠ dist x y := by
@@ -387,7 +387,7 @@ theorem mol_exposed_iff {x y : M} (hxy : x ≠ y) :
 
 end FreeSpaceTest
 
--- Vérifié le 11/11/2026 sur live.lean-lang.org (Lean v4.36.0-rc2, Mathlib) : aucune erreur ;
--- les deux théorèmes ne dépendent que de propext, choice, Quot.sound (pas de sorry).
+-- Checked on 12 Nov 2026 on live.lean-lang.org (Lean v4.36.0-rc2, Mathlib): no errors;
+-- both theorems depend only on propext, choice, Quot.sound (no sorry).
 #print axioms FreeSpaceTest.fnorm_mol
 #print axioms FreeSpaceTest.mol_exposed_iff
