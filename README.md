@@ -3,6 +3,11 @@
 > **This repository is a test / experiment**, not a finished library and not a Mathlib
 > contribution. It explores how far an AI-assisted formalization of a short research paper
 > can go, and what it leaves to humans. Feedback is welcome.
+>
+> **Independent personal project.** This work was **not supervised, reviewed or endorsed**
+> by the authors of the paper (C. Petitjean, A. Procházka) or by anyone at my university.
+> I am an M2 student revisiting their paper on my own and experimenting with the AI
+> assistant Claude. Any error is mine, not theirs.
 
 A Lean 4 / Mathlib formalization around the paper
 
