@@ -53,7 +53,6 @@ The local build configuration (`lakefile.toml`, `lean-toolchain`) has **not** be
 
 ## Notes
 
-* Comments and docstrings are in French.
 * The code is not written to Mathlib standards.
 
 ## How this was made
